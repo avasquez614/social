@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2007-${year} Crafter Software Corporation.
+ * Copyright (C) 2007-2019 Crafter Software Corporation. All Rights Reserved.
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *   You should have received a copy of the GNU General Public License
- *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.craftercms.social.services.system.impl;
@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.craftercms.commons.collections.IterableUtils;
+import org.craftercms.commons.entitlements.model.EntitlementType;
+import org.craftercms.commons.entitlements.validator.EntitlementValidator;
 import org.craftercms.commons.mongo.MongoDataException;
 import org.craftercms.commons.security.permissions.annotations.HasPermission;
 import org.craftercms.profile.api.Profile;
@@ -60,6 +62,8 @@ public class SocialContextServiceImpl implements SocialContextService {
     private SecurityActionsService securityActionsService;
     private ContextPreferencesService contextPreferencesService;
 
+    protected EntitlementValidator entitlementValidator;
+
     private Logger log = LoggerFactory.getLogger(SocialContextServiceImpl.class);
 
     @Override
@@ -88,6 +92,13 @@ public class SocialContextServiceImpl implements SocialContextService {
     @Override
     @HasPermission(type = SocialPermission.class, action = SecurityActionNames.SYSTEM_CREATE_CONTEXT)
     public SocialContext createNewContext(final String contextName) throws SocialException {
+        try {
+            entitlementValidator.validateEntitlement(EntitlementType.SITE, 1);
+        } catch (Exception e) {
+            throw new SocialException("Unable to complete request due to entitlement limits. Please contact your "
+                + "system administrator.", e);
+        }
+
         SocialContext context = new SocialContext(contextName);
         try {
             socialContextRepository.save(context);
@@ -221,4 +232,9 @@ public class SocialContextServiceImpl implements SocialContextService {
     public void setContextPreferencesService(final ContextPreferencesService contextPreferencesService) {
         this.contextPreferencesService = contextPreferencesService;
     }
+
+    public void setEntitlementValidator(final EntitlementValidator entitlementValidator) {
+        this.entitlementValidator = entitlementValidator;
+    }
+
 }

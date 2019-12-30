@@ -1,7 +1,21 @@
-package org.craftercms.social.controllers.rest.v3.comments;
+/*
+ * Copyright (C) 2007-2019 Crafter Software Corporation. All Rights Reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+package org.craftercms.social.controllers.rest.v3.comments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,18 +54,14 @@ public class ThreadsController {
 
 
     @RequestMapping(value = "{id}/comments", method = RequestMethod.GET)
-    @ApiOperation(value = "Gets all the comments for the given thread", notes = "The pageNumber and page size will " +
-        "only work for top level comments. to restrict the amount of children for level for comment use childrenCount" +
-        " Sort will apply for all levels")
     @ResponseBody
-    public Thread thread(@ApiParam(value = "Id of the thread") @PathVariable final String id, @ApiParam(value =
-        "Levels of comments to return") @RequestParam(required = false,
-        defaultValue = MAX_INT) final int recursive, @ApiParam("Page number to return") @RequestParam(required =
-        false, defaultValue = "0") final int pageNumber, @ApiParam("Comments per Page") @RequestParam(required = false,
-        defaultValue = MAX_INT) final int pageSize, @ApiParam(value = "Amount of Children to return") @RequestParam
-        (required = false, defaultValue = MAX_INT) final int childrenCount, @ApiParam("List of fields to order by")
-    @RequestParam(required = false) final List<String> sortBy, @ApiParam("Sort Order") @RequestParam(required =
-        false) final List<SocialSortOrder> sortOrder) throws SocialException {
+    public Thread thread(@PathVariable final String id,
+                         @RequestParam(required = false, defaultValue = MAX_INT) final int recursive,
+                         @RequestParam(required = false, defaultValue = "0") final int pageNumber,
+                         @RequestParam(required = false, defaultValue = MAX_INT) final int pageSize,
+                         @RequestParam final int childrenCount,
+                         @RequestParam(required = false) final List<String> sortBy,
+                         @RequestParam(required = false) final List<SocialSortOrder> sortOrder) throws SocialException {
         int start = 0;
         if (pageNumber > 0 && pageSize > 0) {
             start = getStart(pageNumber, pageSize);
@@ -79,19 +89,15 @@ public class ThreadsController {
     }
 
     @RequestMapping(value = "{id}/comments/{commentId}/children", method = RequestMethod.GET)
-    @ApiOperation(value = "Gets all the comments for the given thread", notes = "The pageNumber and page size will " +
-        "only work for top level comments. to restrict the amount of children for level for comment use childrenCount" +
-        " Sort will apply for all levels")
     @ResponseBody
-    public Thread comments(@ApiParam(value = "Id of the thread") @PathVariable final String id, @ApiParam(value =
-        "Id" + " of the Comment") @PathVariable final String commentId, @ApiParam(value = "Levels of comments to " +
-        "return") @RequestParam(required = false,
-        defaultValue = MAX_INT) final int recursive, @ApiParam("Page number to return") @RequestParam(required =
-        false, defaultValue = "0") final int pageNumber, @ApiParam("Comments per Page") @RequestParam(required = false,
-        defaultValue = MAX_INT) final int pageSize, @ApiParam(value = "Amount of Children to return") @RequestParam
-        (required = false, defaultValue = MAX_INT) final int childrenCount, @ApiParam("List of fields to order by")
-    @RequestParam(required = false) final List<String> sortBy, @ApiParam("Sort Order") @RequestParam(required =
-        false) final List<SocialSortOrder> sortOrder) throws SocialException {
+    public Thread comments(@PathVariable final String id,
+                           @PathVariable final String commentId,
+                           @RequestParam(required = false, defaultValue = MAX_INT) final int recursive,
+                           @RequestParam(required = false, defaultValue = "0") final int pageNumber,
+                           @RequestParam(required = false, defaultValue = MAX_INT) final int pageSize,
+                           @RequestParam(required = false, defaultValue = MAX_INT) final int childrenCount,
+                           @RequestParam(required = false) final List<String> sortBy,
+                           @RequestParam(required = false) final List<SocialSortOrder> sortOrder) throws SocialException {
         int start = 0;
         if (pageNumber > 0 && pageSize > 0) {
             start = getStart(pageNumber, pageSize);

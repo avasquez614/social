@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2007-2019 Crafter Software Corporation. All Rights Reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.craftercms.social.services.ugc.impl;
 
 import java.io.File;
@@ -12,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +45,14 @@ import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.craftercms.commons.collections.IterableUtils;
+import org.craftercms.commons.entitlements.model.EntitlementType;
+import org.craftercms.commons.entitlements.validator.EntitlementValidator;
 import org.craftercms.commons.http.RequestContext;
 import org.craftercms.commons.i10n.I10nLogger;
 import org.craftercms.commons.mongo.FileInfo;
 import org.craftercms.commons.mongo.MongoDataException;
 import org.craftercms.commons.security.permissions.annotations.HasPermission;
-import org.craftercms.commons.security.permissions.annotations.SecuredObject;
+import org.craftercms.commons.security.permissions.annotations.ProtectedResource;
 import org.craftercms.profile.api.Profile;
 import org.craftercms.profile.api.exceptions.ProfileException;
 import org.craftercms.profile.api.services.ProfileService;
@@ -88,10 +106,20 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
     private TenantConfigurationService tenantConfigurationService;
     private ProfileService profileService;
 
+    protected EntitlementValidator entitlementValidator;
+
     @Override
     @HasPermission(action = UGC_CREATE, type = SocialPermission.class)
     public UGC create(final String contextId, final String ugcParentId, final String targetId, final String
         textContent, final String subject, final Map attrs, final boolean isAnonymous) throws SocialException {
+
+        try {
+            entitlementValidator.validateEntitlement(EntitlementType.ITEM, 1);
+        } catch (Exception e) {
+            throw  new SocialException("Unable to complete request due to entitlement limits. Please contact your "
+                + "system administrator.", e);
+        }
+
         log.debug("logging.ugc.creatingUgc", contextId, targetId, ugcParentId, subject, attrs);
         final UGC template = new UGC(subject, textContent, targetId);
 
@@ -164,7 +192,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public void setAttributes(@SecuredObject final String ugcId, final String contextId, final Map attributes) throws
+    public void setAttributes(@ProtectedResource final String ugcId, final String contextId, final Map attributes) throws
         SocialException, UGCNotFound {
         log.debug("logging.ugc.addingAttributes", attributes, ugcId, contextId);
         try {
@@ -187,7 +215,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public void deleteAttribute(@SecuredObject final String ugcId, final String[] attributesName, final String
+    public void deleteAttribute(@ProtectedResource final String ugcId, final String[] attributesName, final String
         contextId) throws SocialException {
         log.debug("logging.ugc.deleteAttributes", attributesName, ugcId);
         try {
@@ -222,7 +250,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public UGC update(@SecuredObject final String ugcId, final String body, final String subject, final String
+    public UGC update(@ProtectedResource final String ugcId, final String body, final String subject, final String
         contextId, final Map attributes) throws SocialException, UGCNotFound {
         log.debug("logging.ugc.updateUgc", ugcId);
         try {
@@ -314,7 +342,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public FileInfo addAttachment(@SecuredObject final String ugcId, final String contextId, final InputStream
+    public FileInfo addAttachment(@ProtectedResource final String ugcId, final String contextId, final InputStream
         attachment, final String fileName, final String contentType) throws FileExistsException, UGCException {
         String internalFileName = File.separator + contextId + File.separator + ugcId + File.separator +
             fileName;
@@ -354,7 +382,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public void removeAttachment(@SecuredObject final String ugcId, final String contextId, final String
+    public void removeAttachment(@ProtectedResource final String ugcId, final String contextId, final String
         attachmentId) throws UGCException, FileNotFoundException {
         try {
             UGC ugc = ugcRepository.findUGC(contextId, ugcId);
@@ -382,7 +410,7 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
 
     @Override
     @HasPermission(action = UGC_UPDATE, type = SocialPermission.class)
-    public FileInfo updateAttachment(@SecuredObject final String ugcId, final String contextId, final String
+    public FileInfo updateAttachment(@ProtectedResource final String ugcId, final String contextId, final String
         attachmentId, final InputStream newAttachment) throws UGCException, FileNotFoundException {
         if (!ObjectId.isValid(ugcId)) {
             throw new IllegalArgumentException("Given Ugc Id is not valid");
@@ -705,4 +733,9 @@ public class UGCServiceImpl<T extends UGC> implements UGCService {
     public void setProfileService(final ProfileService profileService) {
         this.profileService = profileService;
     }
+
+    public void setEntitlementValidator(final EntitlementValidator entitlementValidator) {
+        this.entitlementValidator = entitlementValidator;
+    }
+
 }

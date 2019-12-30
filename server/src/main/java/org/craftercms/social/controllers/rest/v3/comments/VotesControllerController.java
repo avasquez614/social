@@ -1,7 +1,21 @@
-package org.craftercms.social.controllers.rest.v3.comments;
+/*
+ * Copyright (C) 2007-2019 Crafter Software Corporation. All Rights Reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+package org.craftercms.social.controllers.rest.v3.comments;
 
 import org.craftercms.social.exceptions.SocialException;
 import org.craftercms.social.services.social.VoteOptions;
@@ -21,9 +35,7 @@ public class VotesControllerController<T> extends AbstractCommentsController {
 
     @RequestMapping(value = "{id}/votes/up", method = RequestMethod.POST)
     @ResponseBody
-    @ApiOperation(value = "Votes Up a comment for the current logged user.",notes = "If a user already vote the " +
-        "current comment down, it will be remove before counting the vote up.")
-    public T voteUp(@PathVariable(value = "id") @ApiParam(value = "Ugc id to vote up") final String id) throws
+    public T voteUp(@PathVariable(value = "id") final String id) throws
         SocialException {
         String context = context();
         String userId = userId();
@@ -31,10 +43,8 @@ public class VotesControllerController<T> extends AbstractCommentsController {
     }
 
     @RequestMapping(value = "{id}/votes/down", method = RequestMethod.POST)
-         @ResponseBody
-         @ApiOperation(value = "Votes Down a comment for the current logged user.",
-             notes = "If a user already vote up the comment it will remove the up before counting the vote down.")
-         public T voteDown(@PathVariable(value = "id") @ApiParam(value = "Ugc id to vote up") final String id) throws
+    @ResponseBody
+    public T voteDown(@PathVariable(value = "id") final String id) throws
         SocialException {
         String context = context();
         String userId = userId();
@@ -43,10 +53,7 @@ public class VotesControllerController<T> extends AbstractCommentsController {
 
     @RequestMapping(value = "{id}/votes/neutral", method = RequestMethod.POST)
     @ResponseBody
-    @ApiOperation(value = "Votes Neutral (removes user vote for either up or down)")
-    public T voteNeutral(@PathVariable(value = "id") @ApiParam(value = "Ugc id to vote up") final String id)
-        throws
-        SocialException {
+    public T voteNeutral(@PathVariable(value = "id") final String id) throws SocialException {
         String context = context();
         String userId = userId();
         return (T)socialServices.vote(id, VoteOptions.VOTE_NEUTRAL, userId, context);
